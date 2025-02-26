@@ -1,0 +1,36 @@
+# HTC Submit File using GPU resources
+JobBatchName = "llm4bio-$(experiment)"
+
+universe = docker
+docker_image = ivanjaenm/llm4bio
+
+transfer_input_files    = ./
+preserve_relative_paths = true
+should_transfer_files   = YES
+
+# Logging
+stream_output  = true
+stream_error   = true
+output         = logs/condor_logs/$(experiment)-$(Cluster)_output-$(Process).txt
+error          = logs/condor_logs/$(experiment)-$(Cluster)_error-$(Process).txt
+log            = logs/condor_logs/$(experiment)-$(Cluster)_log-$(Process).txt
+
+# Enviroment vars
+staging_dir  = /staging/jaenmarquez
+environment  = "MPLCONFIGDIR=$(staging_dir)/.config/matplotlib WANDB_CACHE_DIR=$(staging_dir)/.config/wandb PYTORCH_KERNEL_CACHE_PATH=$(staging_dir)/.cache"
+#LOG_DIR=$(staging_dir)
+
+#require_gpus   = (Capability > 7.5) && (GlobalMemoryMb >= 40000)
+request_gpus    = 4
+request_memory  = 80GB
+request_disk    = 30GB
+data_predir     = $(staging_dir)
++GPUJobLength   = "short"
++WantGPULab     = true
+
+executable = scripts/chtc/run_experiment.sh
+arguments  = $(experiment) \
+             $(data_predir)/models \
+             $(request_gpus) \
+             $(Cluster)
+queue 1
