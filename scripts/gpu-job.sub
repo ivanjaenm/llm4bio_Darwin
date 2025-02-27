@@ -21,14 +21,16 @@ environment  = "MPLCONFIGDIR=$(staging_dir)/.config/matplotlib WANDB_CACHE_DIR=$
 #LOG_DIR=$(staging_dir)
 
 #require_gpus   = (Capability > 7.5) && (GlobalMemoryMb >= 40000)
-request_gpus    = 4
-request_memory  = 80GB
+#gpus_minimum_memory = 80GB
+gpus_minimum_capability = 8.0
+request_memory  = 60GB
+request_gpus    = 3
 request_disk    = 30GB
 data_predir     = $(staging_dir)
 +GPUJobLength   = "short"
 +WantGPULab     = true
 
-executable = scripts/chtc/run_experiment.sh
+executable = scripts/run_experiment.sh
 arguments  = $(experiment) \
              $(data_predir)/models \
              $(request_gpus) \
