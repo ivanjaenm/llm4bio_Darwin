@@ -11,6 +11,5 @@ RUN set -xe && \
 COPY requirements.txt.darwin /tmp/requirements.txt.darwin
 #ENV PATH="/home/software/bin:${PATH}"
 ENV STAGING_DIR=/staging/jaenmarquez
-ENV WANDB_API_KEY=b6cf381756cfeeb8e1d5a61ad946302465b56ad1
 
 RUN pip3 install -r /tmp/requirements.txt.darwin
