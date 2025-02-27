@@ -59,7 +59,7 @@ echo "running training job:"
 export DS_SKIP_CUDA_CHECK=1
 export WANDB_API_KEY=b6cf381756cfeeb8e1d5a61ad946302465b56ad1
 
-torchrun  --nproc_per_node=2 --master_port=1212 train.py \
+torchrun  --nproc_per_node=$num_gpu_devices --master_port=1212 train.py \
     --model_name_or_path $model_directory/darwin-7b_v2 \
     --data_path datasets/drug_discovery/tabular/BROAD_REPURPOSING_DRUGS.json \
     --bf16 True \
