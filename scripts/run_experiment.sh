@@ -48,7 +48,7 @@ export WANDB_API_KEY=b6cf381756cfeeb8e1d5a61ad946302465b56ad1
 
 torchrun  --nproc_per_node=$num_gpu_devices --master_port=1212 train.py \
     --model_name_or_path $model_orig \
-    --data_path datasets/drug_discovery/tabular/BROAD_REPURPOSING_DRUGS.json \
+    --data_path datasets/drug_discovery/tabular/QA_DATASET.json \
     --bf16 True \
     --output_dir $model_dest \
     --num_train_epochs 1 \
@@ -76,7 +76,7 @@ torchrun  --nproc_per_node=$num_gpu_devices --master_port=1212 train.py \
 
 # torchrun  --nproc_per_node=2 --master_port=1212 train.py \
 #     --model_name_or_path models/darwin-7b_v2 \
-#     --data_path datasets/drug_discovery/tabular/BROAD_REPURPOSING_DRUGS.json \
+#     --data_path datasets/drug_discovery/tabular/QA_DATASET.json \
 #     --bf16 True \
 #     --output_dir models/darwin-7b_v2_finetuned \
 #     --num_train_epochs 1 \
