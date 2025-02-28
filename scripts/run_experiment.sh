@@ -1,24 +1,17 @@
 #!/bin/bash
 
-# activate environment
-#conda activate bias4ml
-
-# run a single experiment
-#python src/train.py experiment=exp_mlp-mnist.yaml
-
-# run all imagenet experiments inside configs/experiment
-# using the same chtc cluster - this is to avoid copy/extraction/preprocesing 
-#python src/train.py --multirun 'experiment=glob(exp_*-imagenet)'
-
 experiment_name=$1
 model_directory=$2
 num_gpu_devices=$3
 cluster_name=$4
+
+# old parameters
 # #num_workers=$((num_gpu_devices*4))
 # num_workers=0
 # batch_size_per_device=64
 # batch_size=$((num_gpu_devices*batch_size_per_device))
 
+# printing values
 # echo "experiment_name: $experiment_name"
 # echo "data directory:  $data_directory"
 # echo "experiment_id:   $experiment_id"
@@ -41,18 +34,23 @@ nvidia-smi
 #export NETRC=/staging/jaenmarquez/.config/wandb/.netrc
 #wandb login --relogin b6cf381756cfeeb8e1d5a61ad946302465b56ad1
 
-#python src/train.py --multirun 'experiment=glob(*imagenet*)'
+
+# copy model weights from /staging to local workspace
+echo "copying model files:"
+model_orig=$model_directory/darwin-7b_v2
+model_dest=./models/darwin-7b_v2
+mkdir -p $model_dest
+#rsync -ah --progress /staging/jaenmarquez/data/imagenet/ILSVRC2012* ./models
+cp -r $model_orig $model_dest
 
 echo "running training job:"
-
-export DS_SKIP_CUDA_CHECK=1
 export WANDB_API_KEY=b6cf381756cfeeb8e1d5a61ad946302465b56ad1
 
 torchrun  --nproc_per_node=$num_gpu_devices --master_port=1212 train.py \
-    --model_name_or_path $model_directory/darwin-7b_v2 \
+    --model_name_or_path $model_orig \
     --data_path datasets/drug_discovery/tabular/BROAD_REPURPOSING_DRUGS.json \
     --bf16 True \
-    --output_dir $model_directory/darwin-7b_v2_finetuned \
+    --output_dir $model_dest \
     --num_train_epochs 1 \
     --per_device_train_batch_size 1 \
     --per_device_eval_batch_size 1 \
@@ -70,30 +68,30 @@ torchrun  --nproc_per_node=$num_gpu_devices --master_port=1212 train.py \
     --fsdp_transformer_layer_cls_to_wrap 'LlamaDecoderLayer' \
     --tf32 False
 
-# run locally
+# ALTERNATIVELY: run in local mode
 # docker run --gpus '"device=6,7"' ivanjaenm/llm4bio
 # export CUDA_VISIBLE_DEVICES=6,7
 # export DS_SKIP_CUDA_CHECK=1
 # export WANDB_API_KEY=b6cf381756cfeeb8e1d5a61ad946302465b56ad1
 
-torchrun  --nproc_per_node=2 --master_port=1212 train.py \
-    --model_name_or_path models/darwin-7b_v2 \
-    --data_path datasets/drug_discovery/tabular/BROAD_REPURPOSING_DRUGS.json \
-    --bf16 True \
-    --output_dir models/darwin-7b_v2_finetuned \
-    --num_train_epochs 1 \
-    --per_device_train_batch_size 1 \
-    --per_device_eval_batch_size 1 \
-    --gradient_accumulation_steps 1 \
-    --evaluation_strategy "no" \
-    --save_strategy "steps" \
-    --save_steps 500 \
-    --save_total_limit 1 \
-    --learning_rate 2e-5 \
-    --weight_decay 0. \
-    --warmup_ratio 0.03 \
-    --lr_scheduler_type "cosine" \
-    --logging_steps 1 \
-    --fsdp "full_shard auto_wrap" \
-    --fsdp_transformer_layer_cls_to_wrap 'LlamaDecoderLayer' \
-    --tf32 False
+# torchrun  --nproc_per_node=2 --master_port=1212 train.py \
+#     --model_name_or_path models/darwin-7b_v2 \
+#     --data_path datasets/drug_discovery/tabular/BROAD_REPURPOSING_DRUGS.json \
+#     --bf16 True \
+#     --output_dir models/darwin-7b_v2_finetuned \
+#     --num_train_epochs 1 \
+#     --per_device_train_batch_size 1 \
+#     --per_device_eval_batch_size 1 \
+#     --gradient_accumulation_steps 1 \
+#     --evaluation_strategy "no" \
+#     --save_strategy "steps" \
+#     --save_steps 500 \
+#     --save_total_limit 1 \
+#     --learning_rate 2e-5 \
+#     --weight_decay 0. \
+#     --warmup_ratio 0.03 \
+#     --lr_scheduler_type "cosine" \
+#     --logging_steps 1 \
+#     --fsdp "full_shard auto_wrap" \
+#     --fsdp_transformer_layer_cls_to_wrap 'LlamaDecoderLayer' \
+#     --tf32 False
